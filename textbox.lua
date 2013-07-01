@@ -74,6 +74,7 @@ text:addText("Malorum\" (The Extremes of Good and Evil) by Cicero, written in 45
 text:addText("theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, \'Lorem ipsum ")
 text:addText("dolor sit amet..\', comes from a line in section 1.10.32.")
 
+text:clearText( )
 -- Callback functions for input
 -- When the user provides input, it must be sent into the GUI system so that it can
 -- be handled properly.

@@ -51,8 +51,8 @@ local WidgetListHeader = class(awindow.AWindow)
 local WidgetListRow = class(image.Image)
 _M.WidgetList = class(awindow.AWindow)
 
-local SCROLL_BAR_WIDTH = 5
-local HEADER_HEIGHT = 5
+local SCROLL_BAR_WIDTH = 2
+local HEADER_HEIGHT = 1
 local ROW_HEIGHT = HEADER_HEIGHT
 
 function ColumnWidget:init(obj, func, data)
@@ -336,11 +336,11 @@ function _M.WidgetList:insertRow(before, data)
 
 	table.insert(self._rows, before, row)
 
-	for i = 1, #self._selections do
+	--[[for i = 1, #self._selections do
 		if (self._selections[i] > before - 1) then
 			self._selections[i] = self._selections[i] + 1
 		end
-	end
+	end--]]
 
 	self._scrollBar:setTopItem(1)
 	self._scrollBar:setNumItems(self._scrollBar:getNumItems() + 1)
@@ -355,7 +355,87 @@ function _M.WidgetList:insertRow(before, data)
 end
 
 function _M.WidgetList:addRow(data)
+
+	
 	return self:insertRow(#self._rows + 1, data)
+
+end
+--------------------------------------------------------------------
+------------------- MY HACK: INSERT WIDGET AT TOP ------------------
+--------------------------------------------------------------------
+
+function _M.WidgetList:insertRowTop(data)
+	local widths = self._header:getColumnWidths()
+	
+	local row = WidgetListRow(self._gui, 1, widths, self:width() - SCROLL_BAR_WIDTH, self._rowHeight)
+
+	row:setUserData(data)
+
+	self:_addWidgetChild(row)
+
+	
+
+	for i, v in ipairs(self._colWidgets) do
+		if (nil ~= v.func) then
+			local widget
+			if (nil == v.obj) then
+				widget = v.func()
+			else
+				widget = v.obj[v.func](v.obj)
+			end
+
+			widget:setUserData(v.data)
+			row:setWidget(i, widget)
+			row:setSelectedTextStyle(self._selectedTextStyle)
+			row:setUnselectedTextStyle(self._unselectedTextStyle)
+
+			local images = self._imageList:getImageType(self.SELECTION_IMAGES)
+			for i2, v2 in ipairs(images) do
+				row:setSelectionImage(v2.fileName, v2.colorData[1], v2.colorData[2], v2.colorData[3], v2.colorData[4], i2, v2.blendSrc, v2.blendDst)
+			end
+		end
+	end
+
+	table.insert(self._rows, 1, row)
+	--[[for i = 1, #self._selections do
+		if (self._selections[i] > 1) then
+			self._selections[i] = self._selections[i] + 1
+		end
+	end--]]
+
+
+	self._scrollBar:setTopItem(1)
+	self._scrollBar:setNumItems(self._scrollBar:getNumItems() + 1)
+
+	self:_displayRows()
+
+	local e = self:_createWidgetListAddRowEvent(1)
+
+	self:_handleEvent(self.EVENT_WIDGET_LIST_ADD_ROW, e)
+	self:clearSelections()
+	return row
+end
+
+function _M.WidgetList:addRowAtTop(data)
+	--self:setMaxSelections(1)
+	return self:insertRowTop(data)
+end
+
+--------------------------------------------------------------------
+------------------- MY HACK: INSERT WIDGET AT TOP ------------------
+--------------------------------------------------------------------
+
+function _M.WidgetList:updateScrollBar( )
+	if #self._rows < 4 then
+		SCROLL_BAR_WIDTH = 0
+		HEADER_HEIGHT = 0
+	else
+		SCROLL_BAR_WIDTH = 2
+		HEADER_HEIGHT = 1
+	end
+	--self._scrollBar = self._dGui:createVertScrollBar()
+	--self:_addWidgetChild(self._scrollBar)
+	--self._scrollBar:registerEventHandler(self._scrollBar.EVENT_SCROLL_BAR_POS_CHANGED, self, "_handleScrollPosChange")
 end
 
 function _M.WidgetList:removeRow(idx)
@@ -518,6 +598,7 @@ function _M.WidgetList:init(gui)
 	awindow.AWindow.init(self, gui)
 
 	self._type = "WidgetList"
+	self._dGui = gui
 
 	self:_WidgetListEvents()
 

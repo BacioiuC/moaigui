@@ -5,12 +5,13 @@ local data = {
 		pos = {0, 0},
 		dim = {100, 100},
 		selectionImage = "selection image.png",
-		maxSelect = 3,
+		maxSelect = 1,
 		rowHeight = 15,
 		columns = {
-			{"Name", 80, "label"},
+			{"Icon", 20, "Image"},
 			{"Data", 14, "label"},
 		},
+
 	},
 }
 

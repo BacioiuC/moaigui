@@ -531,6 +531,14 @@ function _M.GUI:createImage(...)
 	return w
 end
 
+function _M.GUI:createPointer(...)
+	local w = self._factory:create("Pointer", ...)
+
+	self:_addWindow(w)
+
+	return w
+end
+
 function _M.GUI:createButton(...)
 	local w = self._factory:create("button", ...)
 
@@ -562,6 +570,8 @@ function _M.GUI:createEditBox(...)
 
 	return w
 end
+
+
 
 function _M.GUI:createVertSlider(...)
 	local w = self._factory:create("vert slider", ...)

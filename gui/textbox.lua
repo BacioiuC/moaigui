@@ -43,7 +43,8 @@ local awidgetevent = require "gui/awidgetevent"
 
 _M.TextBox = class(awindow.AWindow)
 
-local SCROLL_BAR_WIDTH = 5
+local SCROLL_BAR_WIDTH = 0
+local MAX_LINES_FOR_SCROLLBAR = 10 -- number of lines at which the scroll bar will be rendered
 
 function _M.TextBox:_createTextboxAddTextEvent(newText)
 	local t = awidgetevent.AWidgetEvent(self.EVENT_TEXT_BOX_ADD_TEXT, self)
@@ -66,6 +67,16 @@ end
 function _M.TextBox:_onSetPos()
 	if (nil ~= self._scrollBar) then
 		self._scrollBar:setPos(self:width() - SCROLL_BAR_WIDTH, 0)
+	end
+end
+
+function _M.TextBox:_updateScrollbar( )
+	if #self._lines > MAX_LINES_FOR_SCROLLBAR then
+		SCROLL_BAR_WIDTH = 2
+		self._scrollBar:setDim(SCROLL_BAR_WIDTH,self:height() )
+	else
+		SCROLL_BAR_WIDTH = 0
+		self._scrollBar:setDim(SCROLL_BAR_WIDTH,self:height() )
 	end
 end
 
@@ -110,7 +121,8 @@ end
 
 function _M.TextBox:setBackgroundImage(image, r, g, b, a, idx, blendSrc, blendDst)
 	self:_setImage(self._rootProp, self._BACKGROUND_INDEX, self.BACKGROUND_IMAGES, image, r, g, b, a, idx, blendSrc, blendDst)
-	self:_setCurrImages(self._TEXT_BOX_INDEX, self.BACKGROUND_IMAGES)
+	--self:_setCurrImages(self._TEXT_BOX_INDEX, self.BACKGROUND_IMAGES)
+	self:_setCurrImages(self._BACKGROUND_INDEX, self.BACKGROUND_IMAGES)
 
 end
 
@@ -131,6 +143,7 @@ function _M.TextBox:_addNewLine()
 	self:_addWidgetChild(line)
 	self._scrollBar:setNumItems(self._scrollBar:getNumItems() + 1)
 
+	self:_updateScrollbar( )
 	return line
 end
 
@@ -217,9 +230,17 @@ function _M.TextBox:removeLine(idx)
 
 	local text = self._lines[idx]:getText()
 	local f = self._fullText:find(text)
-	if (nil == f) then return end
+		if (nil == f) then
+         	self:_removeWidgetChild(self._lines[idx])
 
-	self._fullText = self._fullText:sub(1, f - 1) .. self._fullText:sub(f + #text)
+        	self._scrollBar:setTopItem(1) -- update scrollBar
+	        self._scrollBar:setNumItems(self._scrollBar:getNumItems() - 1)
+	        table.remove(self._lines, idx) -- remove empty line
+  	        self:_displayLines()  -- To erase the old lines
+   			return
+   		end
+
+	--self._fullText = self._fullText:sub(1, f - 1) .. self._fullText:sub(f + #text)
 
 	self:_removeWidgetChild(self._lines[idx])
 
@@ -250,6 +271,16 @@ end
 -- function _M.TextBox:getMaxLines()
 	-- return self._maxLines
 -- end
+function _M.TextBox:returnLines( )
+	return #self._lines
+end
+
+function _M.TextBox:_clear( )
+	local linesOfText = #self._lines
+	for i = 1, linesOfText do
+		self:removeLine(1)
+	end
+end
 
 function _M.TextBox:_TextBoxEvents()
 	self.EVENT_TEXT_BOX_ADD_TEXT = "EventTextBoxAddText"
@@ -274,6 +305,10 @@ function _M.TextBox:init(gui)
 	self._scrollBar = gui:createVertScrollBar()
 	self:_addWidgetChild(self._scrollBar)
 	self._scrollBar:registerEventHandler(self._scrollBar.EVENT_SCROLL_BAR_POS_CHANGED, self, "_handleScrollPosChange")
+end
+
+function _M.TextBox:_getScrollBar( )
+	return self._scrollbar
 end
 
 return _M

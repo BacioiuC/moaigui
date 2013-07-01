@@ -38,6 +38,7 @@ local _M = {}
 _M.LEFT_MOUSE_BUTTON = 0
 _M.MIDDLE_MOUSE_BUTTON = 1
 _M.RIGHT_MOUSE_BUTTON = 2
+_M.TOUCH = 3
 
 local byte = string.byte
 

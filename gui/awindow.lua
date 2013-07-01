@@ -354,6 +354,17 @@ function _M.AWindow:setPos(x, y)
 	self:_onSetPos()
 end
 
+function _M.AWindow:tweenPos(_twX, _twY)
+	--Tweening x = x + (target -x) *0.1
+	self._x = self._x + (_twX - self._x ) * 0.1
+	self._y = self._y + (_twY - self._y ) * 0.1
+
+	local screenX, screenY = self._gui:_calcAbsValue(self._x, self._y)
+	self._rootProp:setLoc(screenX, -screenY)
+
+	self:_onSetPos()
+end
+
 function _M.AWindow:modPos(deltaX, deltaY)
 	self:setPos(self._x + deltaX, self._y + deltaY)
 end
